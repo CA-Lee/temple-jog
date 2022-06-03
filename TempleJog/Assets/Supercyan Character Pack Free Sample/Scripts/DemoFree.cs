@@ -6,7 +6,6 @@ public class DemoFree : MonoBehaviour
     private readonly string[] m_animations = { "Pickup", "Wave" };
     private Animator[] m_animators = null;
     [SerializeField] private FreeCameraLogic m_cameraLogic = null;
-
     private void Start()
     {
         m_animators = FindObjectsOfType<Animator>();
@@ -28,8 +27,8 @@ public class DemoFree : MonoBehaviour
     {
         GUILayout.BeginVertical(GUILayout.Width(Screen.width));
 
-        GUILayout.BeginHorizontal();
-
+        /*GUILayout.BeginHorizontal();
+        
         if (GUILayout.Button("Previous character (Q)"))
         {
             m_cameraLogic.PreviousTarget();
@@ -58,7 +57,7 @@ public class DemoFree : MonoBehaviour
 
             if (i == m_animations.Length - 1) { GUILayout.EndHorizontal(); }
             else if (i == (m_animations.Length / 2)) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }
-        }
+        }*/
 
         GUILayout.Space(16);
 
@@ -67,19 +66,19 @@ public class DemoFree : MonoBehaviour
 
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
-        GUILayout.Label("WASD or arrows: Move");
+        GUILayout.Label("AD : Left/Right");
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
-        GUILayout.Label("Left Shift: Walk");
+        GUILayout.Label("Space: stop/start Run");
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
-        GUILayout.Label("Space: Jump");
+        GUILayout.Label("w: Jump");
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 

@@ -14,35 +14,68 @@ public class SimpleSampleCharacterControl : MonoBehaviour
         /// </summary>
         Direct
     }
-
+    [SerializeField] private Vector3 BeginPos;
+    [SerializeField] private float BeginRotate;
     [SerializeField] private float m_moveSpeed = 2;
-    [SerializeField] private float m_turnSpeed = 200;
     [SerializeField] private float m_jumpForce = 4;
+    [SerializeField] private float Roadwidth;
+    [SerializeField] private float fMovewidth = 0.1f;
+    [SerializeField] private float fRotateAngle = 3;
 
     [SerializeField] private Animator m_animator = null;
     [SerializeField] private Rigidbody m_rigidBody = null;
 
-    [SerializeField] private ControlMode m_controlMode = ControlMode.Direct;
+    [SerializeField] private ControlMode m_controlMode = ControlMode.Tank;
 
     private float m_currentV = 0;
     private float m_currentH = 0;
 
-    private readonly float m_interpolation = 10;
-    private readonly float m_walkScale = 0.33f;
-    private readonly float m_backwardsWalkScale = 0.16f;
-    private readonly float m_backwardRunScale = 0.66f;
+    //stop or run
+    private float m_force = 1;
+
+    //rotate
+    private bool m_right = false;
+    private bool m_left = false;
+
+    //horizontal move
+    private bool m_rightmove = false;
+    private bool m_leftmove = false;
+
+    private Vector3 move;
+    //Difference
+    private float DifAngle = 0;
+    private float DifWidth = 0;
+
+    //private readonly float m_interpolation = 10;
+    //private readonly float m_walkScale = 0.33f;
+
 
     private bool m_wasGrounded;
-    private Vector3 m_currentDirection = Vector3.zero;
+    //private Vector3 m_currentDirection = Vector3.zero;
 
+    //jump
     private float m_jumpTimeStamp = 0;
     private float m_minJumpInterval = 0.25f;
     private bool m_jumpInput = false;
 
+    //
+    private float moveDifference = 0;
+    private float fix = 0;
+    private bool m_move = false;
+    //Direction State
+    private int dir = 4;
+    //x,z
     private bool m_isGrounded;
 
     private List<Collider> m_collisions = new List<Collider>();
 
+    private void Start()
+    {
+        transform.rotation = Quaternion.Euler(0, BeginRotate, 0);
+        dir += (int)(BeginRotate / 90);
+        dir %= 4;
+        transform.position = BeginPos;
+    }
     private void Awake()
     {
         if (!m_animator) { gameObject.GetComponent<Animator>(); }
@@ -106,9 +139,37 @@ public class SimpleSampleCharacterControl : MonoBehaviour
 
     private void Update()
     {
-        if (!m_jumpInput && Input.GetKey(KeyCode.Space))
+        /*if (!m_jumpInput && Input.GetKey(KeyCode.Space))
         {
             m_jumpInput = true;
+        }*/
+        if (!m_jumpInput && Input.GetAxis("Vertical") > 0)
+        {
+            m_jumpInput = true;
+        }
+        if (!m_right && !m_left && Input.GetKeyDown(KeyCode.D))
+        {
+            m_right = true;
+            m_move = true;
+            this.Difference();
+        }
+        if (!m_right && !m_left && Input.GetKeyDown(KeyCode.A))
+        {
+            m_left = true;
+            m_move = true;
+            this.Difference();
+        }
+        if (!m_rightmove && !m_leftmove && Input.GetKeyDown(KeyCode.E))
+        {
+            m_rightmove = true;
+        }
+        if (!m_rightmove && !m_leftmove && Input.GetKeyDown(KeyCode.Q))
+        {
+            m_leftmove = true;
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            m_force = (m_force == 0) ? 1 : 0;
         }
     }
 
@@ -139,33 +200,44 @@ public class SimpleSampleCharacterControl : MonoBehaviour
     {
         float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
-
-        bool walk = Input.GetKey(KeyCode.LeftShift);
-
-        if (v < 0)
+        if (!m_right && !m_left)
         {
-            if (walk) { v *= m_backwardsWalkScale; }
-            else { v *= m_backwardRunScale; }
+            transform.position += m_moveSpeed * Time.deltaTime * m_force * transform.forward;
+            if (m_rightmove)
+            {
+                this.Horizontalmove(1);
+            }
+            else if (m_leftmove)
+            {
+                this.Horizontalmove(-1);
+            }
         }
-        else if (walk)
+        else if (m_right)
         {
-            v *= m_walkScale;
+
+            this.Rotate(1);
+            if (m_move)
+            {
+                this.MoveDifference();
+            }
         }
+        else if (m_left)
+        {
 
-        m_currentV = Mathf.Lerp(m_currentV, v, Time.deltaTime * m_interpolation);
-        m_currentH = Mathf.Lerp(m_currentH, h, Time.deltaTime * m_interpolation);
-
-        transform.position += transform.forward * m_currentV * m_moveSpeed * Time.deltaTime;
-        transform.Rotate(0, m_currentH * m_turnSpeed * Time.deltaTime, 0);
-
-        m_animator.SetFloat("MoveSpeed", m_currentV);
+            this.Rotate(-1);
+            if (m_move)
+            {
+                this.MoveDifference();
+            }
+        }
+        m_animator.SetFloat("MoveSpeed", m_force);
 
         JumpingAndLanding();
     }
 
     private void DirectUpdate()
     {
-        float v = Input.GetAxis("Vertical");
+        /*float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
 
         Transform camera = Camera.main.transform;
@@ -179,7 +251,7 @@ public class SimpleSampleCharacterControl : MonoBehaviour
         m_currentV = Mathf.Lerp(m_currentV, v, Time.deltaTime * m_interpolation);
         m_currentH = Mathf.Lerp(m_currentH, h, Time.deltaTime * m_interpolation);
 
-        Vector3 direction = camera.forward * m_currentV + camera.right * m_currentH;
+        Vector3 direction = transform.forward * m_currentV + transform.right * m_currentH;
 
         float directionLength = direction.magnitude;
         direction.y = 0;
@@ -190,12 +262,12 @@ public class SimpleSampleCharacterControl : MonoBehaviour
             m_currentDirection = Vector3.Slerp(m_currentDirection, direction, Time.deltaTime * m_interpolation);
 
             transform.rotation = Quaternion.LookRotation(m_currentDirection);
-            transform.position += m_currentDirection * m_moveSpeed * Time.deltaTime;
+            transform.position += m_moveSpeed * Time.deltaTime * m_currentDirection;
 
             m_animator.SetFloat("MoveSpeed", direction.magnitude);
         }
 
-        JumpingAndLanding();
+        JumpingAndLanding();*/
     }
 
     private void JumpingAndLanding()
@@ -216,6 +288,88 @@ public class SimpleSampleCharacterControl : MonoBehaviour
         if (!m_isGrounded && m_wasGrounded)
         {
             m_animator.SetTrigger("Jump");
+        }
+    }
+
+    //left:-1,right 1
+    private void Rotate(int R_dir)
+    {
+        if (90.0f - DifAngle > fRotateAngle)
+        {
+            transform.Rotate(0, R_dir * fRotateAngle, 0);
+            DifAngle += fRotateAngle;
+        }
+        else
+        {
+            if (R_dir == 1)
+            {
+                m_right = false;
+            }
+            else if (R_dir == -1)
+            {
+                m_left = false;
+            }
+            transform.Rotate(0, R_dir * (90.0f - DifAngle), 0);
+            dir += R_dir;
+            dir += dir < 0 ? 4 : 0;
+            dir %= 4;
+            DifAngle = 0;
+        }
+    }
+    //left:-1,right 1
+    private void Horizontalmove(int dir)
+    {
+        if (Roadwidth - DifWidth > fMovewidth)
+        {
+            transform.position += transform.right * fMovewidth * (float)dir;
+            DifWidth += fMovewidth;
+        }
+        else
+        {
+            if (dir == 1)
+                m_rightmove = false;
+            else if (dir == -1)
+                m_leftmove = false;
+            transform.position += transform.right * (Roadwidth - DifWidth) * (float)dir;
+            DifWidth = 0;
+        }
+    }
+    private void Difference()
+    {
+        Vector3 vectorDifference = (transform.position - BeginPos);
+        moveDifference = (dir % 2 == 0) ? vectorDifference.z : vectorDifference.x % (3f * Roadwidth);
+        fix = moveDifference < 0 ? -1 : 1;
+        moveDifference = Mathf.Abs(moveDifference);
+        //
+        if (moveDifference <= (0.5f * Roadwidth))
+        {
+            moveDifference = 0f * Roadwidth - moveDifference;
+        }
+        else if (moveDifference <= (1.5f * Roadwidth))
+        {
+            moveDifference = 1f * Roadwidth - moveDifference;
+        }
+        else if (moveDifference <= (2.5f * Roadwidth))
+        {
+            moveDifference = 2f * Roadwidth - moveDifference;
+        }
+        else
+        {
+            moveDifference = 3f * Roadwidth - moveDifference;
+        }
+        moveDifference *= fix;
+    }
+    private void MoveDifference()
+    {
+        if (moveDifference * fix - fMovewidth > 0 && (m_right || m_left))
+        {
+            transform.position += ((dir % 2 == 0) ? Vector3.forward : Vector3.right) * fMovewidth * Roadwidth * fix;
+            moveDifference -= (fMovewidth * fix);
+        }
+        else
+        {
+            transform.position += ((dir % 2 == 0) ? Vector3.forward : Vector3.right) * moveDifference * Roadwidth;
+            m_move = false;
         }
     }
 }
