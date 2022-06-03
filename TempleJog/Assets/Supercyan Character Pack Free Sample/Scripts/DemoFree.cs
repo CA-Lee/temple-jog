@@ -22,12 +22,12 @@ public class DemoFree : MonoBehaviour
             m_cameraLogic.NextTarget();
         }
     }
-
+    /*
     private void OnGUI()
     {
         GUILayout.BeginVertical(GUILayout.Width(Screen.width));
 
-        /*GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal();
         
         if (GUILayout.Button("Previous character (Q)"))
         {
@@ -57,7 +57,7 @@ public class DemoFree : MonoBehaviour
 
             if (i == m_animations.Length - 1) { GUILayout.EndHorizontal(); }
             else if (i == (m_animations.Length / 2)) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }
-        }*/
+        }
 
         GUILayout.Space(16);
 
@@ -85,5 +85,5 @@ public class DemoFree : MonoBehaviour
         GUI.color = oldColor;
 
         GUILayout.EndVertical();
-    }
+    }*/
 }

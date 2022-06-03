@@ -31,7 +31,9 @@ enum Lane
 
 public class KinectController : MonoBehaviour
 {
-    public GameObject BodySourceManager;
+    public string Bodyname = "KinectBody";
+
+    private GameObject BodySourceManager;
 
     private BodySourceManager _BodyManager;
 
@@ -65,6 +67,7 @@ public class KinectController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        BodySourceManager = GameObject.Find(Bodyname);
     }
 
     // Update is called once per frame

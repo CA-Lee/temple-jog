@@ -60,7 +60,7 @@ public class FreeCameraLogic : MonoBehaviour
         transform.LookAt(m_currentTarget.position + new Vector3(0, m_height, 0));*/
         if (m_currentTarget == null) { return; }
         //y軸向上移動distanceUp,目標當前位置向後移動distanceAway
-        Vector3 position = m_currentTarget.position+Vector3.up*distanceUp-m_currentTarget.forward*distanceAway;
+        Vector3 position = m_currentTarget.position + Vector3.up * distanceUp - m_currentTarget.forward * distanceAway;
         //平滑的轉向
         transform.position = Vector3.Slerp(transform.position, position, smooth);
         //看向target

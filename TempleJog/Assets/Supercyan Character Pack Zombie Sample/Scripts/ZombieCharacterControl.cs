@@ -21,9 +21,8 @@ public class ZombieCharacterControl : MonoBehaviour
     [SerializeField] private Rigidbody m_rigidBody = null;
 
     [SerializeField] private ControlMode m_controlMode = ControlMode.Tank;
-
-    [SerializeField] public GameObject Target;
-
+    [SerializeField] private string targetname = "MaleFreeSimpleMovement1";
+    private GameObject Target;
     private float m_currentV = 0;
     private float m_currentH = 0;
 
@@ -39,6 +38,7 @@ public class ZombieCharacterControl : MonoBehaviour
     private void Start()
     {
         transform.position = BeginPos;
+        Target = GameObject.Find(targetname);
     }
     private void FixedUpdate()
     {

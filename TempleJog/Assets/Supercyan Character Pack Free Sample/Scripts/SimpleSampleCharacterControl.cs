@@ -14,11 +14,11 @@ public class SimpleSampleCharacterControl : MonoBehaviour
         /// </summary>
         Direct
     }
-    [SerializeField] private Vector3 BeginPos = new Vector3(0f, 0f, 0f);
-    [SerializeField] private float BeginRotate = 0f;
+    [SerializeField] private Vector3 BeginPos;
+    [SerializeField] private float BeginRotate;
     [SerializeField] private float m_moveSpeed = 2;
     [SerializeField] private float m_jumpForce = 4;
-    [SerializeField] private float Roadwidth = 1f;
+    [SerializeField] private float Roadwidth;
     [SerializeField] private float fMovewidth = 0.1f;
     [SerializeField] private float fHorizontalMovewidth = 0.1f;
     [SerializeField] private float fRotateAngle = 3;
@@ -63,12 +63,18 @@ public class SimpleSampleCharacterControl : MonoBehaviour
     private float moveDifference = 0;
     private float fix = 0;
     private bool m_move = false;
+
     //Direction State
     private int dir = 4;
+    
     //x,z
     private bool m_isGrounded;
 
     private List<Collider> m_collisions = new List<Collider>();
+    
+    //
+    [SerializeField] private string monstername = "FreeZombieSimpleMovement";
+    private GameObject monster;
 
     //Find Object
     public string controllerName = "Kinect";
@@ -83,6 +89,7 @@ public class SimpleSampleCharacterControl : MonoBehaviour
         transform.position = BeginPos;
         controller = GameObject.Find(controllerName);
         _controller = controller.GetComponent<KinectController>();
+        monster = GameObject.Find(monstername);
     }
     private void Awake()
     {
@@ -103,6 +110,11 @@ public class SimpleSampleCharacterControl : MonoBehaviour
                 }
                 m_isGrounded = true;
             }
+        }
+        if (collision.gameObject == monster)
+        {
+            m_force = 0;
+            transform.position = BeginPos;
         }
     }
 
